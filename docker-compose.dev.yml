@@ -1,0 +1,52 @@
+version: '2'
+
+networks:
+  app:
+
+services:
+  mysql:
+    image: mysql:9.2
+    environment:
+      - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
+      - MYSQL_DATABASE=${DB_DATABASE}
+      - MYSQL_USER=${DB_USERNAME}
+      - MYSQL_PASSWORD=${DB_PASSWORD}
+    restart: unless-stopped
+    volumes:
+      - ${DATA_BASE_PATH}/mysql:/var/lib/mysql
+    networks:
+      - app
+
+  bookstack:
+    build:
+      context: .
+      dockerfile: Dockerfile.muso
+    depends_on:
+      - mysql
+    environment:
+      - DB_HOST=${DB_HOST}
+      - DB_DATABASE=${DB_DATABASE}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - APP_NAME=${APP_NAME}
+      - APP_URL=${APP_URL}
+      - APP_ENV=${APP_ENV}
+      - APP_KEY=${APP_KEY}
+      - APP_DEBUG=${APP_DEBUG:-false}
+      - APP_LANG=${APP_LANG:-fr}
+      - APP_AUTO_LANG_PUBLIC=${APP_AUTO_LANG_PUBLIC:-false}
+      - MAIL_DRIVER=${MAIL_DRIVER}
+      - MAIL_FROM_NAME=${MAIL_FROM_NAME}
+      - MAIL_FROM=${MAIL_FROM}
+      - MAIL_HOST=${MAIL_HOST}
+      - MAIL_PORT=${MAIL_PORT}
+      - MAIL_USERNAME=${MAIL_USERNAME}
+      - MAIL_PASSWORD=${MAIL_PASSWORD}
+    restart: unless-stopped
+    volumes:
+      - ${DATA_BASE_PATH}/uploads:/var/www/bookstack/public/uploads
+      - ${DATA_BASE_PATH}/storage_uploads:/var/www/bookstack/storage/uploads
+      - ./bookstack:/var/www/bookstack
+      - /var/www/bookstack/vendor
+    networks:
+      - app
